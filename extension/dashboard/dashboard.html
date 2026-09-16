@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Site Clone Collector — 대시보드</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><img src="../icons/icon32.png" alt="" /> Site Clone Collector <span class="ver" id="version"></span></div>
+    <div class="target">
+      <span class="label">대상 탭</span>
+      <select id="tabSelect" title="분석할 탭"></select>
+      <button id="refreshTabs" class="ghost" title="탭 목록 새로고침">↻</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel options">
+      <h2>수집 옵션</h2>
+
+      <fieldset>
+        <legend>스크린샷</legend>
+        <label><input type="checkbox" id="optScreenshot" checked /> 전체 페이지 스크린샷 (스크롤 스티칭)</label>
+        <label><input type="checkbox" id="optSections" checked /> 섹션별 잘라내기 (header/nav/main 자식/footer)</label>
+        <label><input type="checkbox" id="optResponsive" /> 반응형 스크린샷 (창 너비 변경)</label>
+        <label class="inline">너비 목록 <input type="text" id="optWidths" value="375, 768, 1024" /></label>
+        <label class="inline">포맷 <select id="optShotFormat"><option value="png">PNG</option><option value="jpeg">JPEG</option></select></label>
+        <label class="inline">최대 높이(px) <input type="number" id="optMaxShotHeight" value="30000" min="1000" step="1000" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>DOM · 스타일</legend>
+        <label><input type="checkbox" id="optStyles" checked /> 요소별 계산 스타일 (기본값 대비 차이만)</label>
+        <label class="inline">스타일 수집 최대 요소 수 <input type="number" id="optMaxStyled" value="6000" min="500" step="500" /></label>
+        <label><input type="checkbox" id="optScrollFirst" checked /> 수집 전 페이지 끝까지 스크롤 (지연 로딩 유도)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>프레임워크 · 네트워크</legend>
+        <label><input type="checkbox" id="optReact" checked /> React 컴포넌트 트리 (fiber) + DOM 매핑</label>
+        <label><input type="checkbox" id="optNetwork" checked /> fetch/XHR 기록 (훅 주입 이후)</label>
+        <label><input type="checkbox" id="optHookFromLoad" checked /> 페이지 로드 시점부터 기록 (훅 등록 후 새로고침)</label>
+        <label><input type="checkbox" id="optStorageValues" /> localStorage/쿠키 값 포함 (기본: 키만, 민감 키 마스킹)</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>에셋 다운로드</legend>
+        <label><input type="checkbox" id="optAssets" checked /> 에셋 다운로드 활성화</label>
+        <div class="row">
+          <label><input type="checkbox" id="optAssetImages" checked /> 이미지</label>
+          <label><input type="checkbox" id="optAssetFonts" checked /> 폰트</label>
+          <label><input type="checkbox" id="optAssetCss" checked /> CSS</label>
+          <label><input type="checkbox" id="optAssetJs" checked /> JS</label>
+          <label><input type="checkbox" id="optAssetVideo" /> 비디오</label>
+          <label><input type="checkbox" id="optAssetSrcset" /> srcset 전체 변형</label>
+        </div>
+        <label class="inline">파일당 최대(MB) <input type="number" id="optAssetMaxMb" value="25" min="1" /></label>
+        <label class="inline">총 최대(MB) <input type="number" id="optAssetTotalMb" value="400" min="10" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>사이트 크롤</legend>
+        <label><input type="checkbox" id="optCrawl" /> 내부 링크를 따라 여러 페이지 수집</label>
+        <label class="inline">최대 페이지 <input type="number" id="optMaxPages" value="20" min="1" max="500" /></label>
+        <label class="inline">경로 접두어 필터 <input type="text" id="optPathPrefix" placeholder="예: /products (비우면 전체)" /></label>
+        <label class="inline">페이지당 대기(ms) <input type="number" id="optNavWait" value="1500" min="0" step="500" /></label>
+        <label><input type="checkbox" id="optUseManifest" checked /> Next.js 빌드 매니페스트 라우트도 큐에 추가</label>
+      </fieldset>
+
+      <div class="actions">
+        <button id="btnCapture" class="primary">이 페이지 캡처</button>
+        <button id="btnCrawl">사이트 크롤 시작</button>
+        <button id="btnStop" class="danger" disabled>중지</button>
+      </div>
+      <div class="actions">
+        <button id="btnZip" disabled>ZIP 다운로드</button>
+        <button id="btnJson" disabled>JSON만 다운로드</button>
+        <button id="btnReset" class="ghost">초기화</button>
+      </div>
+      <div class="hint">
+        캡처 중에는 대상 창을 최소화하거나 완전히 가리지 마세요.<br />
+        열린 모달·쿠키 배너는 캡처 전에 닫는 것이 좋습니다.
+      </div>
+    </aside>
+
+    <section class="panel results">
+      <div class="status" id="status">대기 중</div>
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+
+      <div class="tabs" id="resultTabs">
+        <button data-tab="log" class="active">로그</button>
+        <button data-tab="pages">페이지 (<span id="pageCount">0</span>)</button>
+        <button data-tab="summary">요약</button>
+        <button data-tab="tokens">디자인 토큰</button>
+        <button data-tab="shots">스크린샷</button>
+        <button data-tab="assets">에셋</button>
+        <button data-tab="network">네트워크</button>
+        <button data-tab="react">React 트리</button>
+        <button data-tab="report">리포트</button>
+      </div>
+
+      <div class="tabpanes">
+        <div class="tabpane active" data-pane="log"><pre id="log" class="log"></pre></div>
+        <div class="tabpane" data-pane="pages"><div id="pages" class="pages"></div></div>
+        <div class="tabpane" data-pane="summary"><div id="summary"></div></div>
+        <div class="tabpane" data-pane="tokens"><div id="tokens"></div></div>
+        <div class="tabpane" data-pane="shots"><div id="shots"></div></div>
+        <div class="tabpane" data-pane="assets"><div id="assets"></div></div>
+        <div class="tabpane" data-pane="network"><div id="network"></div></div>
+        <div class="tabpane" data-pane="react"><pre id="react" class="mono"></pre></div>
+        <div class="tabpane" data-pane="report"><pre id="report" class="mono wrap"></pre></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="zip.js"></script>
+  <script src="report.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

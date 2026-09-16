@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Site Clone Collector</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; width: 320px; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background: #0f172a; color: #e2e8f0; }
+    .wrap { padding: 14px; }
+    h1 { font-size: 15px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+    h1 img { width: 20px; height: 20px; }
+    .sub { color: #94a3b8; font-size: 12px; margin-bottom: 12px; }
+    .tab { background: #1e293b; border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; }
+    .tab .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tab .url { color: #7dd3fc; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    button { width: 100%; border: 0; border-radius: 8px; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button.primary { background: #22d3ee; color: #0f172a; }
+    button.primary:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+    .note { color: #94a3b8; font-size: 11px; margin-top: 10px; }
+    .err { color: #fca5a5; font-size: 12px; margin-top: 8px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1><img src="../icons/icon32.png" alt="" />Site Clone Collector</h1>
+    <div class="sub">현재 탭의 페이지를 분석해 복제용 데이터를 수집합니다.</div>
+    <div class="tab">
+      <div class="title" id="tabTitle">…</div>
+      <div class="url" id="tabUrl"></div>
+    </div>
+    <button class="primary" id="openBtn">분석 대시보드 열기</button>
+    <div class="err" id="err"></div>
+    <div class="note">대시보드는 별도 창으로 열립니다. 캡처 중에는 대상 창을 최소화하거나 완전히 가리지 마세요.</div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
